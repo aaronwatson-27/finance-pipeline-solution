@@ -1,0 +1,15 @@
+services:
+  localstack:
+    container_name: localstack-finance
+    image: localstack/localstack:2026.7.4
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+      - SERVICES=s3,iam,sts
+      - DEBUG=${DEBUG:-0}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20

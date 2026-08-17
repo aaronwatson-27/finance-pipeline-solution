@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[makefile]": {
+    "editor.insertSpaces": false
+  },
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true
+}

@@ -1,0 +1,27 @@
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# dbt
+part2_pipeline/dbt/target/
+part2_pipeline/dbt/dbt_packages/
+part2_pipeline/dbt/logs/
+
+# DuckDB
+*.duckdb
+*.duckdb.wal
+
+# OS
+.DS_Store
