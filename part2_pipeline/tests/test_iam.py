@@ -13,7 +13,7 @@ from botocore.exceptions import ClientError
 pytestmark = pytest.mark.aws
 
 AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
-BUCKET_PREFIX = os.environ.get("BUCKET_PREFIX", "aaron-fdp-")
+BUCKET_PREFIX = os.environ.get("AWS_TEST_BUCKET_PREFIX", "aaron-fdp-")
 PROFILE = os.environ.get("AWS_PROFILE_REAL", "finance-platform-aws")
 REGION = "ap-southeast-2"
 
