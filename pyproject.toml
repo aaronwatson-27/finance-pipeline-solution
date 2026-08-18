@@ -24,6 +24,7 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["part2_pipeline/tests"]
+markers = ["aws: requires real AWS credentials and applied aws/ infrastructure"]
 
 [tool.uv]
 package = false
