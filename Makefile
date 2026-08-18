@@ -1,16 +1,23 @@
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset fmt lint tf-fmt tf-validate tf-sec test ci
+.PHONY: help install up down reset check-port fmt lint tf-fmt tf-validate tf-sec \
+	    tf-apply tf-plan-aws tf-apply-aws tf-destroy-aws test ci
 
 help:  ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
+		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 install:  ## Create venv and install dependencies
 	uv sync
 	uv run pre-commit install
 
-up:  ## Start LocalStack and wait for readiness
-	docker compose up -d
+check-port:  ## Fail early if port 4566 is already in use
+	@if lsof -i :4566 -sTCP:LISTEN -t > /dev/null 2>&1; then \
+		echo "Port 4566 in use. Run 'docker ps' and stop the container holding it."; \
+		exit 1; \
+	fi
+
+up: check-port  ## Start LocalStack and wait for readiness
+	docker compose up -d --remove-orphans
 	@echo "Waiting for LocalStack..."
 	@until curl -s http://localhost:4566/_localstack/health > /dev/null; do sleep 2; done
 	@echo "LocalStack ready."
@@ -18,7 +25,7 @@ up:  ## Start LocalStack and wait for readiness
 down:  ## Stop LocalStack
 	docker compose down
 
-reset: down up  ## Restart from a clean state
+reset: down up  ## Restart LocalStack from a clean state
 
 fmt:  ## Format Python
 	uv run ruff format .
@@ -29,11 +36,13 @@ lint:  ## Lint Python
 	uv run ruff format --check .
 
 tf-fmt:  ## Check Terraform formatting
-	terraform -chdir=part1_infrastructure/local fmt -check -recursive ..
+	terraform fmt -check -recursive part1_infrastructure/
 
-tf-validate:  ## Validate Terraform
+tf-validate:  ## Validate Terraform in both environments
 	terraform -chdir=part1_infrastructure/local init -backend=false
 	terraform -chdir=part1_infrastructure/local validate
+	terraform -chdir=part1_infrastructure/aws init -backend=false
+	terraform -chdir=part1_infrastructure/aws validate
 
 tf-sec:  ## Static security scan (fails on HIGH and above)
 	trivy config --exit-code 1 --severity HIGH,CRITICAL \
@@ -41,7 +50,25 @@ tf-sec:  ## Static security scan (fails on HIGH and above)
 		--tf-vars part1_infrastructure/local/terraform.tfvars \
 		part1_infrastructure/local
 
-test:  ## Run tests
-	uv run pytest -v
+tf-apply:  ## Provision local infrastructure in LocalStack
+	terraform -chdir=part1_infrastructure/local init -input=false
+	terraform -chdir=part1_infrastructure/local apply -auto-approve
+
+tf-plan-aws:  ## Plan against real AWS
+	terraform -chdir=part1_infrastructure/aws init -input=false
+	terraform -chdir=part1_infrastructure/aws plan
+
+tf-apply-aws:  ## Provision real AWS infrastructure (prompts for confirmation)
+	terraform -chdir=part1_infrastructure/aws init -input=false
+	terraform -chdir=part1_infrastructure/aws apply
+
+tf-destroy-aws:  ## Tear down real AWS infrastructure
+	terraform -chdir=part1_infrastructure/aws destroy
+
+test:  ## Run tests (excludes tests requiring real AWS)
+	uv run pytest -v -m "not aws"
+
+test-aws:  ## Run tests that require real AWS credentials
+	uv run pytest -v -m aws
 
 ci: lint tf-fmt tf-validate tf-sec test  ## Everything CI runs
