@@ -35,8 +35,11 @@ tf-validate:  ## Validate Terraform
 	terraform -chdir=part1_infrastructure/local init -backend=false
 	terraform -chdir=part1_infrastructure/local validate
 
-tf-sec:  ## Static security scan of Terraform
-	trivy config part1_infrastructure/
+tf-sec:  ## Static security scan (fails on HIGH and above)
+	trivy config --exit-code 1 --severity HIGH,CRITICAL \
+		--ignorefile .trivyignore \
+		--tf-vars part1_infrastructure/local/terraform.tfvars \
+		part1_infrastructure/local
 
 test:  ## Run tests
 	uv run pytest -v

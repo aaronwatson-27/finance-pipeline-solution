@@ -1,0 +1,7 @@
+# AWS-0132: SSE-S3 suggested by the assessment brief. In production, would suggest
+# using an SSE-KMS with a customer-managed key.
+AWS-0132
+
+# AWS-0089: access logging omitted. Requires a destination bucket.
+# In Production we'd use a dedicated log bucket or CloudTrail events.
+AWS-0089

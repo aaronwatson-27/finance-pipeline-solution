@@ -72,9 +72,7 @@ resource "aws_iam_role_policy" "data_engineer" {
   policy = data.aws_iam_policy_document.data_engineer.json
 }
 
-# ---------------------------------------------------------------------------
-# finance_analyst: read-only on the finance curated layer, nothing else.
-# ---------------------------------------------------------------------------
+# finance_analyst: only read access on the finance curated layer, nothing else.
 
 data "aws_iam_policy_document" "finance_analyst" {
   statement {
