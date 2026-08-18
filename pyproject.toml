@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.0", "ruff>=0.6"]
+dev = ["pytest>=8.0", "ruff>=0.6", "python-dotenv>=1.0"]
 
 [tool.ruff]
 line-length = 100
@@ -22,9 +22,11 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
-[tool.pytest.ini_options]
-testpaths = ["part2_pipeline/tests"]
-markers = ["aws: requires real AWS credentials and applied aws/ infrastructure"]
-
 [tool.uv]
 package = false
+
+[tool.pytest.ini_options]
+testpaths = ["part2_pipeline/tests"]
+pythonpath = ["part2_pipeline/src"]
+markers = ["aws: requires real AWS credentials and applied aws/ infrastructure"]
+addopts = "--strict-markers"
