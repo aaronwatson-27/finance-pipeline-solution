@@ -1,6 +1,13 @@
 .DEFAULT_GOAL := help
-.PHONY: help install up down reset check-port fmt lint tf-fmt tf-validate tf-sec \
-	    tf-apply tf-plan-aws tf-apply-aws tf-destroy-aws test ci
+
+.PHONY: help install up down reset check-port fmt lint ls-landing ls-curated tf-fmt \
+		tf-validate tf-sec tf-apply tf-plan-aws tf-apply-aws tf-destroy-aws test test-aws ci
+
+AWSLOCAL = AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+           AWS_DEFAULT_REGION=ap-southeast-2 \
+           aws --endpoint-url=http://localhost:4566
+
+PY = PYTHONPATH=part2_pipeline/src uv run python
 
 help:  ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -72,3 +79,12 @@ test-aws:  ## Run tests that require real AWS credentials
 	uv run pytest -v -m aws
 
 ci: lint tf-fmt tf-validate tf-sec test  ## Everything CI runs
+
+ls-landing:  ## List objects in the landing bucket
+	@$(AWSLOCAL) s3 ls s3://finance-data-landing/ --recursive
+
+ls-curated:  ## List objects in the curated bucket
+	@$(AWSLOCAL) s3 ls s3://finance-data-curated/ --recursive
+
+ingest:  ## Land raw transactions for a date (DATE=YYYY-MM-DD)
+	@$(PY) -m finance_platform.ingest $(DATE)
