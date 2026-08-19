@@ -1,8 +1,8 @@
 """Ingestion: fetch the raw source data for a business date.
 
-Here, `fetch_transactions` replaces what would normally be from an API/SFTP, etc.
-When connecting a real source this is what would need to change. For now, this calls
-generate_csv from seed.py.
+Here, `fetch_transactions` replaces what would normally be a set of various ingestion strategies
+from multiple API/SFTP sources. When connecting real sources this is what would need to change.
+For now, this calls generate_csv from seed.py.
 """
 
 import logging
@@ -24,10 +24,10 @@ def fetch_transactions(run_date: date, settings: Settings) -> str:
     return generate_csv(run_date, settings.seed_row_count, settings.random_seed)
 
 
-def landing_key(run_date: date, settings: Settings) -> str:
-    """Deterministic S3 key for a business date.
+def landing_key(run_date: date, settings: Settings, dataset: str) -> str:
+    """Deterministic S3 key for a dataset and business date.
 
-    Derived from the date alone, so re-running a date replaces that object
-    rather than appending another copy.
+    Derived from the date alone, so re-running a date replaces that object rather
+    than appending another copy.
     """
-    return f"landing/{settings.domain}/transactions/dt={run_date.isoformat()}/transactions.csv"
+    return f"landing/{settings.domain}/{dataset}/dt={run_date.isoformat()}/{dataset}.csv"

@@ -72,10 +72,9 @@ def build_transactions_curated(accepted: list, run_date: date, settings: Setting
         try:
             # Define the aggregation as a view so the source path is bound once.
             # DuckDB will not accept a bound parameter inside COPY (...).
-            con.execute(
-                f"CREATE TEMP VIEW aggregated AS {load_sql('daily_category_spend')}",
-                {"source_path": str(source_csv)},
-            )
+            sql = load_sql("daily_category_spend").replace("$source_path", f"'{source_csv}'")
+
+            con.execute(f"CREATE TEMP VIEW aggregated AS {sql}")
 
             # output_dir is interpolated rather than bound: COPY requires a literal
             # target. The path comes from tempfile, so there is no SQL injection risk.
