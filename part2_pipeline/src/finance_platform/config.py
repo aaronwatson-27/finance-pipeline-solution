@@ -1,5 +1,5 @@
-"""Read from the environment variables and cache so that every module reads settings from here rather
-than querying the environment variables directly.
+"""Read from the environment variables and cache so that every module reads settings from here
+rather than querying the environment variables directly.
 """
 
 from functools import lru_cache
