@@ -73,7 +73,7 @@ tf-destroy-aws:  ## Tear down real AWS infrastructure
 	terraform -chdir=part1_infrastructure/aws destroy
 
 test:  ## Run tests (excludes tests requiring real AWS)
-	uv run pytest -v -m "not aws"
+	@DO_NOT_TRACK=1 PREFECT_LOGGING_LEVEL=WARNING uv run pytest -v -m "not aws"
 
 test-aws:  ## Run tests that require real AWS credentials
 	uv run pytest -v -m aws
@@ -88,3 +88,6 @@ ls-curated:  ## List objects in the curated bucket
 
 ingest:  ## Land raw transactions for a date (DATE=YYYY-MM-DD)
 	@$(PY) -m finance_platform.ingest $(DATE)
+
+run:  ## Run the pipeline for a date (DATE=YYYY-MM-DD)
+	@DO_NOT_TRACK=1 $(PY) -m finance_platform.transactions_flow $(DATE)

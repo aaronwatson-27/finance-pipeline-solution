@@ -28,5 +28,8 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["part2_pipeline/tests"]
 pythonpath = ["part2_pipeline/src"]
-markers = ["aws: requires real AWS credentials and applied aws/ infrastructure"]
 addopts = "--strict-markers"
+markers = [
+    "aws: requires real AWS credentials and applied aws/ infrastructure",
+    "localstack: requires a running LocalStack with buckets applied",
+]
