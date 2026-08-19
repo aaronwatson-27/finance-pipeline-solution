@@ -21,7 +21,6 @@ locals {
   analyst_bucket_arn = module.domain_lake[var.analyst_domain].bucket_arns["curated"]
 }
 
-# Trust policy, shared by both roles - allows trusted_principal_arns to assume both roles
 # One trust policy per role. Both hold the same principal locally.
 data "aws_iam_policy_document" "assume_role" {
   for_each = var.role_trust

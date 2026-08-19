@@ -6,10 +6,10 @@ and transform into an aggregated view.
 The business date is a parameter, so any date can be re-run at any time and produce the same result.
 
 Retries are used for tasks that make network calls (the fetch and S3 reads and writes), because
-these can potentially succeed on the next attempt.
+these may succeed on the next attempt.
 """
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 from prefect import flow, get_run_logger, task
 
@@ -103,4 +103,4 @@ if __name__ == "__main__":
     import sys
 
     arg = sys.argv[1] if len(sys.argv) > 1 else None
-    finance_daily(date.fromisoformat(arg) if arg else date.today())
+    finance_daily(date.fromisoformat(arg) if arg else datetime.now(UTC).date())

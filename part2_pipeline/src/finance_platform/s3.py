@@ -1,4 +1,4 @@
-# S3 functions to create client and other read, write, upload functions.
+"""S3 functions to create client and other read, write, upload functions."""
 
 import logging
 

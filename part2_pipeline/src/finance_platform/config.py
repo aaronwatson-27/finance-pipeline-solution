@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     def curated_bucket(self) -> str:
         return f"{self.bucket_prefix}{self.domain}-data-curated"
 
+    @property
     def curated_prefix(self) -> str:
         return f"curated/{self.domain}/daily_category_spend"
 
