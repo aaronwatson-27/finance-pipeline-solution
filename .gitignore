@@ -25,3 +25,4 @@ part2_pipeline/dbt/logs/
 
 # OS
 .DS_Store
+part1_infrastructure/aws/terraform.tfvars

@@ -1,0 +1,29 @@
+# Copy to terraform.tfvars and fill in your own values.
+#
+#   cp part1_infrastructure/aws/terraform.tfvars.example \
+#      part1_infrastructure/aws/terraform.tfvars
+#
+# terraform.tfvars is gitignored: it contains your AWS account ID and IAM user name.
+
+# Named AWS CLI profile holding credentials for this account.
+aws_profile = "finance-platform-aws"
+
+# S3 bucket names are globally unique, so a prefix is required here. Keep it
+# short and lowercase; the local environment leaves it empty.
+bucket_prefix = "CHANGE_ME-fdp-"
+
+# Each key creates a landing and a curated bucket. An empty object accepts the
+# module's default lifecycle settings.
+domains = {
+  finance = {}
+}
+
+# Principals permitted to assume each role. Separate per role so assume-rights
+# can diverge from permissions — a shared trust policy would mean anyone able to
+# assume the analyst role could equally assume the engineer role.
+#
+# Find your ARN with: aws sts get-caller-identity --profile finance-platform-aws
+role_trust = {
+  data_engineer   = ["arn:aws:iam::YOUR_ACCOUNT_ID:user/YOUR_IAM_USER"]
+  finance_analyst = ["arn:aws:iam::YOUR_ACCOUNT_ID:user/YOUR_IAM_USER"]
+}
