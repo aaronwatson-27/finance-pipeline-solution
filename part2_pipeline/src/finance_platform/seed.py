@@ -9,45 +9,28 @@ import io
 import random
 from datetime import date
 
-MERCHANTS = {
-    "Woolworths": ("groceries", 15.00, 220.00),
-    "Coles": ("groceries", 15.00, 220.00),
-    "IGA": ("groceries", 8.00, 90.00),
-    "Market Lane Coffee": ("coffee beans", 4.50, 58.00),
-    "Patricia Coffee Brewers": ("coffee beans", 4.50, 22.00),
-    "Baker Bleu": ("bread", 7.00, 45.00),
-    "Lune Croissants": ("pastries", 6.50, 38.00),
-    "Dan Murphy's": ("alcohol", 20.00, 180.00),
-}
+CATEGORIES = ["groceries", "cafe", "restaurant", "takeaway", "bakery", "alcohol"]
 
-MERCHANT_NAMES = sorted(MERCHANTS)
+MERCHANTS = [
+    "Woolworths",
+    "Coles",
+    "IGA",
+    "Market Lane Coffee",
+    "Patricia Coffee Brewers",
+    "Baker Bleu",
+    "Lune Croissants",
+    "Chin Chin",
+    "Uber Eats",
+    "Dan Murphy's",
+]
 
 FIELDNAMES = ["transaction_id", "transaction_date", "category", "amount", "merchant"]
 
 
-# Create valid transaction rows
-def _transaction(run_date: date, index: int, rng: random.Random) -> dict:
-    """Build valid transaction, with category and amount consistent with the merchant."""
-    merchant = rng.choice(MERCHANT_NAMES)
-
-    # Pick out correct category and min/max range for this merchant
-    category, low, high = MERCHANTS[merchant]
-
-    return {
-        "transaction_id": f"TXN-{run_date:%Y%m%d}-{index:05d}",
-        "transaction_date": run_date.isoformat(),
-        "category": category,
-        "amount": f"{rng.uniform(low, high):.2f}",
-        "merchant": merchant,
-    }
-
-
-# Create purposely defective rows
 def _defective_rows(run_date: date, first_valid: dict) -> list[dict]:
-    """Five defects spanning both failure classes.
-
-    Unparseable: missing ID, non-numeric amount, unparseable date.
-    Parseable but invalid (based on business rules): negative amount, duplicate ID.
+    """Simulates five defects of which failure classes can be a) unparseable (structural):
+    missing ID, non-numeric amount, unparseable date, or b) Parseable but invalid (business rule):
+    negative amount, duplicate ID.
     """
     stamp = f"{run_date:%Y%m%d}"
     return [
@@ -61,21 +44,21 @@ def _defective_rows(run_date: date, first_valid: dict) -> list[dict]:
         {
             "transaction_id": f"TXN-{stamp}-90001",
             "transaction_date": run_date.isoformat(),
-            "category": "coffee beans",
+            "category": "cafe",
             "amount": "not_a_number",
             "merchant": "Market Lane Coffee",
         },
         {
             "transaction_id": f"TXN-{stamp}-90002",
             "transaction_date": "31/02/2026",
-            "category": "pastries",
-            "amount": "37.00",
-            "merchant": "Lune Croissants",
+            "category": "restaurant",
+            "amount": "199.00",
+            "merchant": "Chin Chin",
         },
         {
             "transaction_id": f"TXN-{stamp}-90003",
             "transaction_date": run_date.isoformat(),
-            "category": "bread",
+            "category": "bakery",
             "amount": "-85.50",
             "merchant": "Baker Bleu",
         },
@@ -83,7 +66,6 @@ def _defective_rows(run_date: date, first_valid: dict) -> list[dict]:
     ]
 
 
-# Generate a csv from a mix of valid and invalid data
 def generate_csv(run_date: date, row_count: int, random_seed: int) -> str:
     """Return a CSV string of transactions for run_date, defects included.
 
@@ -91,11 +73,22 @@ def generate_csv(run_date: date, row_count: int, random_seed: int) -> str:
     """
     rng = random.Random(random_seed)
 
-    rows = [_transaction(run_date, i, rng) for i in range(row_count)]
+    rows = [
+        {
+            "transaction_id": f"TXN-{run_date:%Y%m%d}-{i:05d}",
+            "transaction_date": run_date.isoformat(),
+            "category": rng.choice(CATEGORIES),
+            "amount": f"{rng.uniform(5.0, 250.0):.2f}",
+            "merchant": rng.choice(MERCHANTS),
+        }
+        for i in range(row_count)
+    ]
+
     rows += _defective_rows(run_date, rows[0])
 
-    # Scatter the defects through the file, so nothing can pass by relying on row ordering.
-    # Uses the same seeded RNG, so ordering stays deterministic.
+    # Shuffle the defects into the file, as they would be in a real feed, so
+    # nothing downstream can pass because the ordering just happened to work out. Uses the same
+    # seeded RNG, so ordering stays deterministic.
     rng.shuffle(rows)
 
     buffer = io.StringIO()
@@ -109,4 +102,4 @@ if __name__ == "__main__":
     import sys
 
     run_date = date.fromisoformat(sys.argv[1]) if len(sys.argv) > 1 else date.today()
-    print(generate_csv(run_date, 10, 7))
+    print(generate_csv(run_date, 5, 42))

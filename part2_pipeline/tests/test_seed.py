@@ -4,7 +4,7 @@ import csv
 import io
 from datetime import date
 
-from finance_platform.seed import MERCHANTS, generate_csv
+from finance_platform.seed import generate_csv
 
 RUN_DATE = date(2026, 8, 18)
 ROW_COUNT = 20
