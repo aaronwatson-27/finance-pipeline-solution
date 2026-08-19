@@ -84,8 +84,15 @@ def finance_daily(run_date: date) -> dict:
     payload = read_landed(landed, settings)
     accepted, rejected = apply_quality_gate(payload)
 
-    quarantined = quarantine_rejects(rejected, run_date, settings)
-    curated_keys = write_curated(accepted, run_date, settings)
+    # Curated waits on quarantine: a "successful" run must have both files or neither.
+    # Never let curated data exist without its matching rejects record.
+    quarantined_future = quarantine_rejects.submit(rejected, run_date, settings)
+    curated_future = write_curated.submit(
+        accepted, run_date, settings, wait_for=[quarantined_future]
+    )
+
+    quarantined = quarantined_future.result()
+    curated_keys = curated_future.result()
 
     summary = {
         "run_date": run_date.isoformat(),

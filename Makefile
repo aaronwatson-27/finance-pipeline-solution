@@ -1,13 +1,16 @@
 .DEFAULT_GOAL := help
 
 .PHONY: help install up down reset check-port fmt lint ls-landing ls-curated tf-fmt \
-		tf-validate tf-sec tf-apply tf-plan-aws tf-apply-aws tf-destroy-aws test test-aws ci
+		tf-validate tf-sec tf-apply tf-plan-aws tf-apply-aws tf-destroy-aws test test-aws ci \
+		demo ingest run
 
 AWSLOCAL = AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
            AWS_DEFAULT_REGION=ap-southeast-2 \
            aws --endpoint-url=http://localhost:4566
 
 PY = PYTHONPATH=part2_pipeline/src uv run python
+
+DEMO_DATE ?= $(shell date -u +%Y-%m-%d)
 
 help:  ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -91,3 +94,14 @@ ingest:  ## Land raw transactions for a date (DATE=YYYY-MM-DD)
 
 run:  ## Run the pipeline for a date (DATE=YYYY-MM-DD)
 	@DO_NOT_TRACK=1 $(PY) -m finance_platform.transactions_flow $(DATE)
+
+demo: up tf-apply  ## End-to-end demo (up + tf-apply + run + list buckets). Override DEMO_DATE=YYYY-MM-DD.
+	@echo ""
+	@echo "=== Running pipeline for $(DEMO_DATE) ==="
+	@$(MAKE) --no-print-directory run DATE=$(DEMO_DATE)
+	@echo ""
+	@echo "=== Landing bucket ==="
+	@$(MAKE) --no-print-directory ls-landing
+	@echo ""
+	@echo "=== Curated bucket ==="
+	@$(MAKE) --no-print-directory ls-curated
